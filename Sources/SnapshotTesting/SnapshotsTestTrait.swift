@@ -1,8 +1,18 @@
 #if canImport(Testing)
-  @_spi(Experimental) import Testing
+  import Testing
 
-  @_spi(Experimental)
+  /// A type representing the configuration of snapshot testing.
+  public struct _SnapshotsTestTrait: SuiteTrait, TestTrait {
+    public let isRecursive = true
+    let configuration: SnapshotTestingConfiguration
+  }
+
   extension Trait where Self == _SnapshotsTestTrait {
+    /// Configure snapshot testing in a suite or test.
+    public static var snapshots: Self {
+      snapshots()
+    }
+
     /// Configure snapshot testing in a suite or test.
     ///
     /// - Parameters:
@@ -30,23 +40,22 @@
     }
   }
 
-  /// A type representing the configuration of snapshot testing.
-  @_spi(Experimental)
-  public struct _SnapshotsTestTrait: CustomExecutionTrait, SuiteTrait, TestTrait {
-    public let isRecursive = true
-    let configuration: SnapshotTestingConfiguration
-
-    public func execute(
-      _ function: @escaping () async throws -> Void,
-      for test: Test,
-      testCase: Test.Case?
-    ) async throws {
-      try await withSnapshotTesting(
-        record: configuration.record,
-        diffTool: configuration.diffTool
-      ) {
-        try await function()
+  #if compiler(>=6.1)
+    extension _SnapshotsTestTrait: TestScoping {
+      public func provideScope(
+        for test: Test,
+        testCase: Test.Case?,
+        performing function: () async throws -> Void
+      ) async throws {
+        try await withSnapshotTesting(
+          record: configuration.record,
+          diffTool: configuration.diffTool
+        ) {
+          try await File.$counter.withValue(File.Counter()) {
+            try await function()
+          }
+        }
       }
     }
-  }
+  #endif
 #endif
