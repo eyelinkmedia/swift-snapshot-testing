@@ -4,7 +4,6 @@ options:
   bundleIdPrefix: co.pointfree
   deploymentTarget:
     iOS: "13.0"
-    macOS: "10.15"
   indentWidth: 2
   tabWidth: 2
   usesTabs: false
@@ -12,7 +11,7 @@ options:
 targets:
 
   SnapshotTesting:
-    platform: [macOS, iOS]
+    platform: iOS
     settings:
       ENABLE_BITCODE: false
       FRAMEWORK_SEARCH_PATHS: $(inherited) $(PLATFORM_DIR)/Developer/Library/Frameworks
@@ -21,22 +20,9 @@ targets:
       ENABLE_TESTING_SEARCH_PATHS: 'YES'
       DEFINES_MODULE: 'NO'
     scheme:
-      environmentVariables:
-        SNAPSHOT_ARTIFACTS: /tmp/__SnapshotArtifacts__
-      testTargets: ['SnapshotTestingTests_${platform}']
       shared: true
-    sources: [Sources/SnapshotTesting]
-    type: framework
-
-  SnapshotTestingTests:
-    dependencies: [{target: 'SnapshotTesting_${platform}'}]
-    platform: [macOS, iOS]
-    settings:
-      SWIFT_VERSION: 5.0
-      APPLICATION_EXTENSION_API_ONLY: 'YES'
     sources:
-      - path: Tests/SnapshotTestingTests
+      - path: Sources/SnapshotTesting
         excludes:
-          - '**/__Fixtures__'
-          - '**/__Snapshots__'
-    type: bundle.unit-test
+          - 'Documentation.docc'
+    type: framework
